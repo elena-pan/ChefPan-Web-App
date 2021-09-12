@@ -53,7 +53,7 @@ class RecipesList extends Component {
                     }
                     else img = image2
                     return (<div className="col s12 m6 l3">
-                        <div className="card waves-effect waves-light hoverable hoverable" style={{height:"300px"}} onClick={() => this.onRecipeClick(recipe._id.$oid)}>
+                        <div className="card waves-effect waves-light hoverable hoverable" style={{height:"300px", width: "100%"}} onClick={() => this.onRecipeClick(recipe._id.$oid)}>
                             <div className="card-image">
                                 <img src={img} alt="" style={{objectFit:"cover", height:"200px"}} />
                             </div>
