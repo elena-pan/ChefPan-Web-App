@@ -20,7 +20,10 @@ class AddRecipe extends Component {
             steps: ["", "", ""],
             categories: [],
             notes: "",
-            errors: {}
+            errors: {},
+            useBulk: true,
+            ingredientsBulk: [""],
+            stepsBulk: [""]
         };
     }
 
@@ -92,6 +95,16 @@ class AddRecipe extends Component {
         this.setState({ [e.target.id]: e.target.value });
     }
 
+    onChangeUseBulk = e => {
+        this.setState({ useBulk: e.target.checked });
+    }
+    onChangeIngredientsBulk = e => {
+        this.setState({ ingredientsBulk: e.target.value });
+    }
+    onChangeStepsBulk = e => {
+        this.setState({ stepsBulk: e.target.value });
+    }
+
     addIngredient = e => {
         e.preventDefault();
         let prevIngredients = [...this.state.ingredients];
@@ -114,11 +127,19 @@ class AddRecipe extends Component {
         prevSteps.splice(idx, 1);
         this.setState({ steps: prevSteps });
     }
+
     onSubmit = e => {
         e.preventDefault();
+        let ingredients = this.state.ingredients;
+        let steps = this.state.steps;
+        // Parse bulk
+        if (this.state.useBulk) {
+            ingredients = this.state.ingredientsBulk.split(/\r?\n/);
+            steps = this.state.stepsBulk.split(/\r?\n/);
+        }
         // Remove empty inputs
-        let ingredients = this.state.ingredients.filter(ingredient => ingredient.trim() !== "");
-        let steps = this.state.steps.filter(step => step.trim() !== "");
+        ingredients = ingredients.filter(ingredient => ingredient.trim() !== "");
+        steps = steps.filter(step => step.trim() !== "");
         let categories = this.state.categories.filter(category => category.trim() !== "");
         const recipeData = {
             name: this.state.name.trim(),
@@ -140,8 +161,149 @@ class AddRecipe extends Component {
 
     render() {
         const { errors } = this.state;
+        let ingredients = <div></div>;
+        let ingredientsButton = <div></div>;
+        let steps = <div></div>;
+        let stepsButton = <div></div>;
+        if (this.state.useBulk) {
+            ingredients = <div className="input-field col s12">
+                            <textarea
+                            onBlur={this.onChangeIngredientsBulk}
+                            onChange={this.onChangeIngredientsBulk}
+                            value={this.state.ingredientsBulk}
+                            id="ingredientsBulk"
+                            type="text"
+                            className={classnames("materialize-textarea", {
+                                invalid: errors.ingredients
+                            })}
+                            />
+                            <label htmlFor="ingredientsBulk">Ingredients</label>
+                            <span className="helper-text">Prefix text with 'category' to make ingredient category</span>
+                            <span className="helper-text">Separate ingredients with newline</span>
+                            <span className="red-text">
+                                {errors.ingredients}
+                            </span>
+                        </div>
+            steps = <div className="input-field col s12">
+                            <textarea
+                            onBlur={this.onChangeStepsBulk}
+                            onChange={this.onChangeStepsBulk}
+                            value={this.state.stepsBulk}
+                            id="stepsBulk"
+                            type="text"
+                            className={classnames("materialize-textarea", {
+                                invalid: errors.steps
+                            })}
+                            />
+                            <label htmlFor="stepsBulk">Steps</label>
+                            <span className="helper-text">Separate steps with newline</span>
+                            <span className="red-text">
+                                {errors.steps}
+                            </span>
+                        </div>
+        } else {
+            ingredients = this.state.ingredients.map((val, idx) => {
+                if (idx === 0) {
+                    return (
+                    <div className="input-field col s12" key={idx}>
+                        <input
+                        onBlur={this.onChangeIngredient}
+                        onChange={this.onChangeIngredient}
+                        value={this.state.ingredients[0]}
+                        id="0"
+                        type="text"
+                        className={classnames("", {
+                            invalid: errors.ingredients
+                        })}
+                        />
+                        <label htmlFor="0">Ingredient</label>
+                        <span className="helper-text">Prefix text with 'category' to make ingredient category</span>
+                        <span className="red-text">
+                            {errors.ingredients}
+                        </span>
+                    </div>
+                    )
+                }
+                else return (
+                    <div className="input-field col s12" key={idx}>
+                        <input
+                        onBlur={this.onChangeIngredient}
+                        onChange={this.onChangeIngredient}
+                        value={this.state.ingredients[idx]}
+                        id={idx.toString()}
+                        type="text"
+                        />
+                        <label htmlFor={idx.toString()}>Ingredient</label>
+                        <Link onClick={() => this.deleteIngredient(idx)}><i className="material-icons black-text prefix" style={{right:0, fontSize:"24px"}}>delete</i></Link>
+                    </div>
+                )
+            })
+            steps = this.state.steps.map((val, idx) => {
+                if (idx === 0) {
+                    return (<div className="input-field col s12" key={idx}>
+                                <textarea
+                                onBlur={this.onChangeStep}
+                                onChange={this.onChangeStep}
+                                value={this.state.steps[0]}
+                                id="0"
+                                type="text"
+                                className={classnames("materialize-textarea", {
+                                    invalid: errors.steps
+                                })}
+                                />
+                                <label htmlFor="0">Step 1</label>
+                                <span className="red-text">
+                                    {errors.steps}
+                                </span>
+                            </div>)
+                }
+                else return (
+                    <div className="input-field col s12" key={idx}>
+                    <textarea
+                    onBlur={this.onChangeStep}
+                    onChange={this.onChangeStep}
+                    value={this.state.steps[idx]}
+                    id={idx.toString()}
+                    type="text"
+                    className="materialize-textarea"
+                    />
+                    <label htmlFor={idx.toString()}>Step {idx+1}</label>
+                    <Link onClick={() => this.deleteStep(idx)}><i className="material-icons black-text prefix" style={{right:0, fontSize:"24px"}}>delete</i></Link>
+                </div>)
+            })
+            ingredientsButton = <div className="col s12" style={{ paddingLeft: "11px", paddingBottom:"2rem" }}>
+                    <button
+                    style={{
+                        width: "160px",
+                        borderRadius: "3px",
+                        letterSpacing: "1.5px",
+                        marginTop: "1rem"
+                    }}
+                    type="button"
+                    onClick={this.addIngredient}
+                    className="btn btn-small waves-effect waves-light hoverable yellow darken-4"
+                    >
+                    Add ingredient
+                    </button>
+                </div>;
+            stepsButton = <div className="col s12" style={{ paddingLeft: "11px", paddingBottom:"2rem" }}>
+                    <button
+                    style={{
+                        width: "160px",
+                        borderRadius: "3px",
+                        letterSpacing: "1.5px",
+                        marginTop: "1rem"
+                    }}
+                    type="button"
+                    onClick={this.addStep}
+                    className="btn btn-small waves-effect waves-light hoverable yellow darken-4"
+                    >
+                    Add Step
+                    </button>
+                </div>
+        }
         return (
-                <div className="container">
+            <div className="container">
                 <div style={{ marginTop: "4rem" }} className="row">
                 <div className="col s12 l8 offset-l2">
                     <Link to="/recipes" className="btn-flat waves-effect">
@@ -189,119 +351,38 @@ class AddRecipe extends Component {
                         />
                         <label htmlFor="servings">Yield</label>
                     </div>
+                    <div class="switch col s12">
+                        <label>
+                        Form
+                        <input type="checkbox"
+                            onChange={this.onChangeUseBulk}
+                            defaultChecked />
+                        <span class="lever"></span>
+                        Bulk entry
+                        </label>
+                    </div>
                     <div className="col s12" style={{paddingLeft:"9px", paddingTop:"20px"}}>
                         <h5>
                             <b>Ingredients</b>
                         </h5>
                     </div>
                     {
-                        this.state.ingredients.map((val, idx) => {
-                            if (idx === 0) {
-                                return (
-                                <div className="input-field col s12" key={idx}>
-                                    <input
-                                    onBlur={this.onChangeIngredient}
-                                    onChange={this.onChangeIngredient}
-                                    value={this.state.ingredients[0]}
-                                    id="0"
-                                    type="text"
-                                    className={classnames("", {
-                                        invalid: errors.ingredients
-                                    })}
-                                    />
-                                    <label htmlFor="0">Ingredient</label>
-                                    <span className="helper-text">Prefix text with 'category' to make ingredient category</span>
-                                    <span className="red-text">
-                                        {errors.ingredients}
-                                    </span>
-                                </div>
-                                )
-                            }
-                            else return (
-                                <div className="input-field col s12" key={idx}>
-                                    <input
-                                    onBlur={this.onChangeIngredient}
-                                    onChange={this.onChangeIngredient}
-                                    value={this.state.ingredients[idx]}
-                                    id={idx.toString()}
-                                    type="text"
-                                    />
-                                    <label htmlFor={idx.toString()}>Ingredient</label>
-                                    <Link onClick={() => this.deleteIngredient(idx)}><i className="material-icons black-text prefix" style={{right:0, fontSize:"24px"}}>delete</i></Link>
-                                </div>
-                            )
-                        })
+                        ingredients
                     }
-                    <div className="col s12" style={{ paddingLeft: "11px", paddingBottom:"2rem" }}>
-                        <button
-                        style={{
-                            width: "160px",
-                            borderRadius: "3px",
-                            letterSpacing: "1.5px",
-                            marginTop: "1rem"
-                        }}
-                        type="button"
-                        onClick={this.addIngredient}
-                        className="btn btn-small waves-effect waves-light hoverable yellow darken-4"
-                        >
-                        Add ingredient
-                        </button>
-                    </div>
+                    {
+                        ingredientsButton
+                    }
                     <div className="col s12" style={{paddingLeft:"9px", paddingTop:"10px"}}>
                         <h5>
                             <b>Directions</b>
                         </h5>
                     </div>
                     {
-                        this.state.steps.map((val, idx) => {
-                            if (idx === 0) {
-                                return (<div className="input-field col s12" key={idx}>
-                                            <textarea
-                                            onBlur={this.onChangeStep}
-                                            onChange={this.onChangeStep}
-                                            value={this.state.steps[0]}
-                                            id="0"
-                                            type="text"
-                                            className={classnames("materialize-textarea", {
-                                                invalid: errors.steps
-                                            })}
-                                            />
-                                            <label htmlFor="0">Step 1</label>
-                                            <span className="red-text">
-                                                {errors.steps}
-                                            </span>
-                                        </div>)
-                            }
-                            else return (
-                                <div className="input-field col s12" key={idx}>
-                                <textarea
-                                onBlur={this.onChangeStep}
-                                onChange={this.onChangeStep}
-                                value={this.state.steps[idx]}
-                                id={idx.toString()}
-                                type="text"
-                                className="materialize-textarea"
-                                />
-                                <label htmlFor={idx.toString()}>Step {idx+1}</label>
-                                <Link onClick={() => this.deleteStep(idx)}><i className="material-icons black-text prefix" style={{right:0, fontSize:"24px"}}>delete</i></Link>
-                            </div>)
-                        })
+                        steps
                     }
-                    <div className="col s12" style={{ paddingLeft: "11px", paddingBottom:"2rem" }}>
-                        <button
-                        style={{
-                            width: "160px",
-                            borderRadius: "3px",
-                            letterSpacing: "1.5px",
-                            marginTop: "1rem"
-                        }}
-                        type="button"
-                        onClick={this.addStep}
-                        className="btn btn-small waves-effect waves-light hoverable yellow darken-4"
-                        >
-                        Add Step
-                        </button>
-                    </div>
+                    {
+                        stepsButton
+                    }
                     <div className="input-field col s12">
                         <div className="chips chips-autocomplete chips-placeholder"></div>
                         <span className="red-text">
