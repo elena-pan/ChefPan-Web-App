@@ -22,8 +22,8 @@ class AddRecipe extends Component {
             notes: "",
             errors: {},
             useBulk: true,
-            ingredientsBulk: [""],
-            stepsBulk: [""]
+            ingredientsBulk: "",
+            stepsBulk: ""
         };
     }
 

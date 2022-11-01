@@ -69,6 +69,6 @@ class UserLogin(Resource):
                 'exp': datetime.utcnow() + timedelta(seconds=2592000) # 1 month in seconds
             }
             token = jwt.encode(payload, jwt_secret, jwt_algorithm)
-            return {'token': token.decode('utf-8')}
+            return {'token': token}
         else:
             return {'passwordincorrect': 'Incorrect username/password combination'}, 400
