@@ -145,7 +145,7 @@ def generate_upload_signed_url_v4():
         return {"notimg":"Upload must be jpg, jpeg, or png file"}, 400
     method = request.json['method'] # PUT
 
-    json_data = json.loads(google_api_credentials)
+    json_data = json.loads(google_api_credentials, strict=False)
     # the private_key needs to replace \n parsed as string literal with escaped newlines
     json_data['private_key'] = json_data['private_key'].replace('\\n', '\n')
     credentials = service_account.Credentials.from_service_account_info(json_data)

@@ -1,0 +1,8 @@
+[
+    {
+      "origin": ["https://chef-pan.uc.r.appspot.com"],
+      "method": ["PUT"],
+      "responseHeader": ["Authorization", "Content-Range", "Accept", "Content-Type", "Origin", "Range"],
+      "maxAgeSeconds": 3000
+    }
+]
